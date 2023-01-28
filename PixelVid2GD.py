@@ -48,8 +48,9 @@ root = os.getcwd()
 x, y=3.75,783.75
 trig_x, trig_y=0,y+30*80
 last_pxArray=[]
-videoFile = None
 
+videoFile = input("File name (and extension) to process: ")
+songID=input("Song ID to replace with the video's audio: ")
 #1.875
 def readFrames():
     global videoFile,last_pxArray,levle_array,x,y,trig_x,trig_y
@@ -94,10 +95,12 @@ def readFrames():
                     groupIds.append(he)
                 last_pxArray=deepcopy(pxArray)
             else:
+                yoffs=0
                 for wi,w in enumerate(pxArray):
                     for hi,h in enumerate(w):
                         if pxArray[wi][hi] != last_pxArray[wi][hi]:
-                            levle_array.append(f"1,1006")
+                            levle_array.append(f"1,1006,2,{trig_x},3,{trig_y+yoffs},10,99999999999,50,10,49,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},51,{groupIds[wi][hi]},52,1;")
+                            yoffs+=2
         elif not ret:
             break
         trig_x+=19.2
@@ -105,5 +108,7 @@ def readFrames():
             
     cap.release()
 levle_string=''.join(levle_array)
+
+os.system(f"ffmpeg -y -i \"./{videoFile}\" {os.path.join(SAVE_FILE_PATH,f'{str(songID)}.mp3')}")
 with open("levelstring",'w') as w: w.write(levle_string)
 os.system(f"node PixelVid2GDHelper.js test")
