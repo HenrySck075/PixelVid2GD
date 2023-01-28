@@ -52,9 +52,10 @@ last_pxArray=[]
 videoFile = input("File name (and extension) to process: ")
 songID=input("Song ID to replace with the video's audio: ")
 #1.875
+print("Comparing frames")
 def readFrames():
     global videoFile,last_pxArray,levle_array,x,y,trig_x,trig_y
-
+    frames=0
     
     print('Read file: {}'.format(videoFile))
     cap = cv2.VideoCapture(videoFile) # says we capture an image from a webcam
@@ -78,7 +79,7 @@ def readFrames():
                 for h in range(im.height):
                     lay.append(im.getpixel((w,h)))
                 pxArray.append(lay)
-            
+            changes=0
             if last_pxArray == []: #init object canvas
                 xoffs=0
                 for wi,w in enumerate(pxArray):
@@ -101,8 +102,11 @@ def readFrames():
                         if pxArray[wi][hi] != last_pxArray[wi][hi]:
                             levle_array.append(f"1,1006,2,{trig_x},3,{trig_y+yoffs},10,99999999999,50,10,49,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},51,{groupIds[wi][hi]},52,1;")
                             yoffs+=2
+                            changes+=1
         elif not ret:
             break
+        if frames==0: print("First frame, nothing to compare")
+        else: print(f"{frames-1} with {frames}: {changes} change(s)")
         trig_x+=19.2
         cv2.waitKey(int(1000/30))
             
