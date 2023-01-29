@@ -1,4 +1,4 @@
-import base64,os,struct,zlib,cv2,math,colorsys
+import base64,os,struct,zlib,cv2,math,colorsys,js2py
 from copy import deepcopy#,numpy as np
 from PIL import Image
 if not os.path.exists("./PixelVid2GDHelper.js"): print("Cannot find helper file. Please also include it here or rename the helper file if you did"); exit(1)
@@ -70,7 +70,7 @@ def readFrames():
 
             pil_im = Image.fromarray(converted)
 
-            im = pil_im.resize(math.floor(width/(height/80)),80)
+            im = pil_im.resize((math.floor(width/(height/80)),80))
                     
             pxArray=[]
             #please help me
@@ -99,21 +99,59 @@ def readFrames():
                 for wi,w in enumerate(pxArray):
                     for hi,h in enumerate(w):
                         if pxArray[wi][hi] != last_pxArray[wi][hi]:
-                            levle_array.append(f"1,1006,2,{trig_x},3,{trig_y+yoffs},10,99999999999,50,10,49,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},51,{groupIds[wi][hi]},52,1;") #pulse trigger
+                            levle_array.append(f"1,1006,2,{trig_x},3,{trig_y+yoffs},10,99999999999,50,10,49,{'{0}a{1}a{2}a1a1'.format(*rgb_to_hsv(pxArray[wi][hi]))},51,{groupIds[wi][hi]},52,1,48,1;") #pulse trigger
                             yoffs+=2
                             changes+=1
             last_pxArray=deepcopy(pxArray)
         elif not ret:
             break
         if frames==0: print("First frame, nothing to compare")
-        else: print(f"{frames-1} with {frames}: {changes} change(s)")
+        else: print(f"{frames} with {frames-1}: {changes} change(s)")
         trig_x+=19.2
         cv2.waitKey(int(1000/30))
+        frames+=1
             
     cap.release()
+readFrames()
 levle_array.append(f"1,1,2,{trig_x+700},3,1")
 levle_string=''.join(levle_array)
 
 os.system(f"ffmpeg -y -i \"./{videoFile}\" {os.path.join(SAVE_FILE_PATH,f'{str(songID)}.mp3')}")
-with open("levelstring",'w') as w: w.write(levle_string)
-os.system(f"node PixelVid2GDHelper.js test")
+jshelper="""
+function helper(fileName,levelStr) {
+    const zlib = require('zlib')
+    const fs = require('fs')
+    let arg=process.argv
+    let fileName = arg[2]
+
+    let data = require('./leveldata.json')
+    let gdLevels = process.env.HOME || process.env.USERPROFILE + "/AppData/Local/GeometryDash/CCLocalLevels.dat"
+
+    fs.readFile(gdLevels, 'utf8', function(err, saveData) {
+
+        if (err) return console.log("Error! Could not open or find GD save file")
+
+        if (!saveData.startsWith('<?xml version="1.0"?>')) {
+            function xor(str, key) {
+                str = String(str).split('').map(letter => letter.charCodeAt());
+                let res = "";
+                for (i = 0; i < str.length; i++) res += String.fromCodePoint(str[i] ^ key);
+                return res;
+            }
+            saveData = xor(saveData, 11)
+            saveData = Buffer.from(saveData, 'base64')
+            try { saveData = zlib.unzipSync(saveData).toString() }
+            catch(e) { return console.log("Error! GD save file seems to be corrupt!\nMaybe try saving a GD level in-game to refresh it?\n") }
+        }
+        
+        saveData = saveData.split("<k>_isArr</k><t />")
+        saveData[1] = saveData[1].replace(/<k>k_(\d+)<\/k><d><k>kCEK<\/k>/g, function(n) { return "<k>k_" + (Number(n.slice(5).split("<")[0])+1) + "</k><d><k>kCEK</k>" })
+        saveData = saveData[0] + "<k>_isArr</k><t />" + data.ham + data.bur + levelStr + data.ger + saveData[1]        
+        
+        saveData = saveData.replace("[[NAME]]", fileName.split(".")[0].replace(/[^a-z|0-9]/gi, "").slice(0, 30)).replace("[[DESC]]", "info goes here")
+        fs.writeFileSync(gdLevels, saveData, 'utf8')
+    })
+}"""
+#with open("levelstring",'w') as w: w.write(levle_string)
+helpe=js2py.eval_js(jshelper)
+helpe(videoFile,levle_string)
