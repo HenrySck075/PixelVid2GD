@@ -1,37 +1,13 @@
-import base64,os,struct,zlib,cv2,math,colorsys,js2py
+import os,cv2,math,colorsys,js2py
 from copy import deepcopy#,numpy as np
 from PIL import Image
 if not os.path.exists("./PixelVid2GDHelper.js"): print("Cannot find helper file. Please also include it here or rename the helper file if you did"); exit(1)
 SAVE_FILE_PATH = os.path.join(os.getenv('LocalAppData'), 'GeometryDash')
-print("""
-Warning: The result will overwrite first level in "Created Level" list contains level data (aka atleast 1 object in the level)!
-Make sure you've prepared one to not get your level vanished.""")
 def xor_bytes(data: bytes, value: int) -> bytes:
     return bytes(map(lambda x: x ^ value, data))
 
 def rgb_to_hsv(rgb):
     return tuple(str(int(i)) for i in colorsys.rgb_to_hsv(*rgb))
-
-def encrypt(decrypted_data,need_xor=True):  # encrypt
-    compressed_data = zlib.compress(decrypted_data)
-    data_crc32 = zlib.crc32(decrypted_data)
-    data_size = len(decrypted_data)
-
-    compressed_data = (b'\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x0b' +  # gzip header
-                        compressed_data[2:-4] +
-                        struct.pack('I I', data_crc32, data_size))
-    encoded_data = base64.b64encode(compressed_data, altchars=b'-_')
-    encrypted_data = xor_bytes(encoded_data, 11)
-
-    return encrypted_data if need_xor else encoded_data
-
-def decrypt(encrypted_data,need_xor=True):  # decrypt
-
-    decrypted_data = xor_bytes(encrypted_data, 11) if need_xor else encrypted_data
-    decoded_data = base64.b64decode(decrypted_data, altchars=b'-_')
-    decompressed_data = zlib.decompress(decoded_data[10:], -zlib.MAX_WBITS)
-
-    return decompressed_data
 
 def read_in_chunks(file_object, chunk_size=1024):
     """Lazy function (generator) to read a file piece by piece.
@@ -42,8 +18,7 @@ def read_in_chunks(file_object, chunk_size=1024):
             break
         yield data
 
-with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),"rb") as w:
-    decrypted=decrypt(w.read()).decode("utf-8")
+
 #print(decrypt(re.search("<k>k4</k><s>(.*)</s>",decrypted).group(1),False))
 levle_array=[
     "1,1612,2,-29,3,705;",
@@ -51,7 +26,7 @@ levle_array=[
     "1,749,2,-39,3,955,32,-1;",
     "1,13,2,-29,3,945;"
 ]
-print("\n\n")
+
 # Get the Current Dir
 root = os.getcwd()
 x, y=3.75,783.75
@@ -59,9 +34,9 @@ trig_x, trig_y=0,y+30*80
 last_pxArray=[]
 
 videoFile = input("File name (and extension) to process: ")
-showProcess=True if int(input("Show processing frame (0 or 1): ")) == 0 else False
 songID=input("Song ID to replace with the video's audio: ")
 #1.875
+print("\n\n")
 
 def readFrames():
     global videoFile,last_pxArray,levle_array,x,y,trig_x,trig_y
@@ -75,7 +50,6 @@ def readFrames():
     while(cap.isOpened()):
         ret,cv2_im = cap.read()
         if ret :
-            if showProcess: cv2.imshow(f"Processing frame {frames}",cv2_im)
             converted = cv2.cvtColor(cv2_im,cv2.COLOR_BGR2RGB)
 
             pil_im = Image.fromarray(converted)
@@ -116,7 +90,7 @@ def readFrames():
         elif not ret:
             break
         if frames==0: print("First frame, nothing to compare")
-        else: print(f"{frames} with {frames-1}: {changes} change(s)")
+        else: print(f"{frames} with {frames-1}: {changes} change(s)      ",end="\r")
         trig_x+=19.2
         cv2.waitKey(int(1000/30))
         frames+=1
@@ -128,6 +102,30 @@ levle_array.append(f"1,1,2,{trig_x+700},3,1")
 levle_string=''.join(levle_array)
 os.system(f"ffmpeg -y -i \"./{videoFile}\" {os.path.join(SAVE_FILE_PATH,f'{str(songID)}.mp3')}")
 
-if saveLevel: 
-    with open("levelstring",'w') as w: w.write(levle_string)
-os.system(f"node PixelVid2GDHelper.js \"{levle_string}\" {videoFile}")
+#js-ing time
+decod=js2py.eval_js("""
+function decode(saveData,levelStr,fileName,songID) {
+    const zlib = require('zlib')
+    const fs = require('fs')
+    let data = require('./leveldata.json')
+    let gdLevels = process.env.HOME || process.env.USERPROFILE + "/AppData/Local/GeometryDash/CCLocalLevels.dat"
+    fs.readFile(gdLevels, 'utf8', function(err, saveData) {
+
+    if (err) return console.log("Error! Could not open or find GD save file")
+
+    if (!saveData.startsWith('<?xml version="1.0"?>')) {
+        
+        saveData = Buffer.from(saveData, 'base64')
+        try { saveData = zlib.unzipSync(saveData).toString() }
+        catch(e) { return console.log("Error! GD save file seems to be corrupt!\nMaybe try saving a GD level in-game to refresh it?\n") }
+    }
+    saveData = saveData.split("<k>_isArr</k><t />")
+    saveData[1] = saveData[1].replace(/<k>k_(\d+)<\/k><d><k>kCEK<\/k>/g, function(n) { return "<k>k_" + (Number(n.slice(5).split("<")[0])+1) + "</k><d><k>kCEK</k>" })
+    saveData = saveData[0] + "<k>_isArr</k><t />" + data.ham + data.bur + levelStr + data.ger + saveData[1]        
+    
+    saveData = saveData.replace("[[NAME]]", fileName.split(".")[0].replace(/[^a-z|0-9]/gi, "").slice(0, 30)).replace("[[DESC]]", "").replace("[[SONG_ID]]",songID)
+    fs.writeFileSync(gdLevels, saveData, 'utf8')
+}
+""")
+with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),'r') as r:
+    decrypted=decod(r.read(),levle_string,videoFile.replace(".mp4",""),songID)
