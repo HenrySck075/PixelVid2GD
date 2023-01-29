@@ -86,15 +86,14 @@ def readFrames():
                     yoffs=0
                     he=[]
                     if wi == math.floor(len(pxArray)/2):
-                        levle_array.append(f"1,901,2,{x+wi*x-73.5},3,765,58,1,51,1,10,99999999999")
+                        levle_array.append(f"1,901,2,{x+wi*x-73.5},3,765,58,1,51,1,10,99999999999") #move trigger
                     for hi,h in enumerate(w):
                         m=(wi+1)+(wi*80)+(hi+1)
-                        levle_array.append(f"1,971,2,{x+xoffs},3,{y+yoffs},22,10,42,1,44,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},57,1.{m};")
+                        levle_array.append(f"1,971,2,{x+xoffs},3,{y+yoffs},22,10,42,1,44,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},57,1.{m},32,0.5;") #objec
                         yoffs+=1.875
                         he.append(m)
                     xoffs+=1.875
                     groupIds.append(he)
-                last_pxArray=deepcopy(pxArray)
             else:
                 yoffs=0
                 for wi,w in enumerate(pxArray):
@@ -103,6 +102,7 @@ def readFrames():
                             levle_array.append(f"1,1006,2,{trig_x},3,{trig_y+yoffs},10,99999999999,50,10,49,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},51,{groupIds[wi][hi]},52,1;")
                             yoffs+=2
                             changes+=1
+            last_pxArray=deepcopy(pxArray)
         elif not ret:
             break
         if frames==0: print("First frame, nothing to compare")
