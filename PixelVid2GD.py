@@ -97,7 +97,7 @@ def readFrames():
                         levle_array.append(f"1,901,2,{x+wi*x-73.5},3,765,58,1,51,1,10,99999999999;") #move trigger
                     for hi,h in enumerate(w):
                         m+=1
-                        levle_array.append(f"1,917,2,{x+xoffs},3,{y+yoffs},21,10,41,1,57,1.{m};1,1006,2,0,3,{y+yoffs+8000},46,99999999999,50,10,49,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},24,1;") #objec
+                        levle_array.append(f"1,917,2,{x+xoffs},3,{y+yoffs},21,10,41,1,57,1.{m};1,1006,2,0,3,{y+yoffs+8000},46,99999999999,50,10,49,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},24,1,52,1,48,1,86,1,51,{m};") #objec
                         yoffs+=7.5
                         he.append(m)
                     xoffs+=7.5
