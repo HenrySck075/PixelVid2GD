@@ -1,8 +1,13 @@
-import os,cv2,math,colorsys,js2py
+import base64,os,cv2,math,colorsys,zlib,regex as re
 from copy import deepcopy#,numpy as np
 from PIL import Image
 #if not os.path.exists("./PixelVid2GDHelper.js"): print("Cannot find helper file. Please also include it here or rename the helper file if you did"); exit(1)
 SAVE_FILE_PATH = os.path.join(os.getenv('LocalAppData'), 'GeometryDash')
+data={
+    "ham": "<k>k_0</k><d><k>kCEK</k><i>4</i><k>k1</k><i>0</i><k>k2</k><s>[[NAME]]</s><k>k4</k><s>",
+    "bur": "kS38,1_0_2_0_3_0_11_0_12_0_13_0_4_-1_6_1000_7_1_15_1_18_0_8_1|1_0_2_0_3_0_11_255_12_255_13_255_4_-1_6_1001_7_1_15_1_18_0_8_1|1_0_2_0_3_0_11_255_12_255_13_255_4_-1_6_1009_7_1_15_1_18_0_8_1|1_255_2_255_3_255_11_255_12_255_13_255_4_-1_6_1002_5_1_7_1_15_1_18_0_8_1|1_135_2_135_3_135_11_255_12_255_13_255_4_-1_6_1005_5_1_7_1_15_1_18_0_8_1|1_255_2_125_3_0_11_255_12_255_13_255_4_-1_6_1006_5_1_7_1_15_1_18_0_8_1|1_255_2_0_3_0_11_255_12_255_13_255_4_-1_6_10_7_1_15_1_18_0_8_1|,kA1,[[SONG_ID]],kA13,0,kA15,0,kA16,0,kA14,,kA6,13,kA7,0,kA17,0,kA18,0,kS39,0,kA2,0,kA3,0,kA8,0,kA4,4,kA9,0,kA10,0,kA11,0;",
+    "ger": "</s><k>k3</k><s>[[DESC]]</s><k>k14</k><t /><k>k46</k><i>0</i><k>k5</k><s></s><k>k13</k><t /><k>k21</k><i>2</i><k>k48</k><i>69</i><k>k16</k><i>1</i><k>k23</k><s>3</s><k>k8</k><i>0</i><k>k45</k><i>0</i><k>k80</k><i>0</i><k>k50</k><i>0</i><k>k47</k><t /><k>k84</k><i>0</i><k>kI1</k><r>0</r><k>kI2</k><r>0</r><k>kI3</k><r>0</r><k>kI5</k><i>6</i><k>kI6</k><d><k>0</k><s>0</s><k>1</k><s>0</s><k>2</k><s>0</s><k>3</k><s>0</s><k>4</k><s>0</s><k>5</k><s>0</s><k>6</k><s>0</s><k>7</k><s>0</s><k>8</k><s>0</s><k>9</k><s>0</s><k>10</k><s>0</s><k>11</k><s>0</s><k>12</k><s>0</s></d></d>"
+}
 def xor_bytes(data: bytes, value: int) -> bytes:
     return bytes(map(lambda x: x ^ value, data))
 
@@ -18,7 +23,22 @@ def read_in_chunks(file_object, chunk_size=1024):
             break
         yield data
 
+def decrypt(encrypted_data,need_xor=True):  # decrypt
 
+        if need_xor: decrypted_data = xor_bytes(encrypted_data, 11)
+        else: decrypted_data=encrypted_data
+        decoded_data = base64.b64decode(decrypted_data, altchars=b'-_')
+        decompressed_data = zlib.decompress(decoded_data[10:], -zlib.MAX_WBITS)
+
+        return decompressed_data
+
+def replacenth(string, sub, wanted, n):
+    where = [m.start() for m in re.finditer(sub, string)][n-1]
+    before = string[:where]
+    after = string[where:]
+    after = after.replace(sub, wanted, 1)
+    newString = before + after
+    print(newString)
 #print(decrypt(re.search("<k>k4</k><s>(.*)</s>",decrypted).group(1),False))
 levle_array=[
     "1,1612,2,-29,3,705;",
@@ -37,6 +57,9 @@ videoFile = input("File name (and extension) to process: ")
 songID=input("Song ID to replace with the video's audio: ")
 #1.875
 print("\n\n")
+
+with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),'r') as r:
+    decrypted=decrypt(r.read())
 
 def readFrames():
     global videoFile,last_pxArray,levle_array,x,y,trig_x,trig_y
@@ -98,33 +121,19 @@ def readFrames():
     cap.release()
 print("Comparing frames")
 readFrames()
-levle_array.append(f"1,1,2,{trig_x+700},3,1")
+levle_array.append(f"1,1,2,{trig_x+700},3,1;")
 levle_string=''.join(levle_array)
-os.system(f"ffmpeg -y -i -loglevel error \"./{videoFile}\" {os.path.join(SAVE_FILE_PATH,f'{str(songID)}.mp3')} ")
+os.system(f"ffmpeg -y -i \"./{videoFile}\" {os.path.join(SAVE_FILE_PATH,f'{str(songID)}.mp3')} ")
 
 #js-ing time
-decod=js2py.eval_js("""
-function decode(saveData,levelStr,fileName,songID) {
-    const zlib = require('zlib')
-    const fs = require('fs')
-    let data = require('./leveldata.json')
-    let gdLevels = process.env.HOME || process.env.USERPROFILE + "/AppData/Local/GeometryDash/CCLocalLevels.dat"
-    fs.readFile(gdLevels, 'utf8', function(err, saveData) {
-
-    if (err) return console.log("Error! Could not open or find GD save file")
-
-    if (!saveData.startsWith('<?xml version="1.0"?>')) {
-        saveData = Buffer.from(saveData, 'base64')
-        try { saveData = zlib.unzipSync(saveData).toString() }
-        catch(e) { return console.log("Error! GD save file seems to be corrupt!") }
-    }
-    saveData = saveData.split("<k>_isArr</k><t />")
-    saveData[1] = saveData[1].replace(/<k>k_(\d+)<\/k><d><k>kCEK<\/k>/g, function(n) { return "<k>k_" + (Number(n.slice(5).split("<")[0])+1) + "</k><d><k>kCEK</k>" })
-    saveData = saveData[0] + "<k>_isArr</k><t />" + data.ham + data.bur + levelStr + data.ger + saveData[1]        
-    
-    saveData = saveData.replace("[[NAME]]", fileName.split(".")[0].replace(/[^a-z|0-9]/gi, "").slice(0, 30)).replace("[[DESC]]", "").replace("[[SONG_ID]]",songID)
-    fs.writeFileSync(gdLevels, saveData, 'utf8')
-}
-""")
-with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),'r') as r:
-    decod(r.read(),levle_string,videoFile.replace(".mp4",""),songID)
+print("writing")
+s=1
+saveData = decrypted.decode('utf-8').split("<k>_isArr</k><t />")
+for i in re.finditer("<k>k_(\d+)</k><d><k>kCEK</k>", saveData[1]):
+    saveData[1] = replacenth(saveData[1], i.group(), f"<k>k_{int(i.group(1))+1}</k><d><k>kCEK</k>", s)
+    s=2
+saveData = saveData[0] + "<k>_isArr</k><t />" + data.ham + data.bur + "{levelStr}" + data.ger + saveData[1]        
+print("im in here!")
+saveData = saveData.replace("[[NAME]]", fileName.split(".")[0].replace(/[^a-z|0-9]/gi, "").slice(0, 30)).replace("[[DESC]]", "").replace("[[SONG_ID]]","{songID}")
+fs.writeFileSync(gdLevels, saveData, 'utf8')
+    #".format(saveData=r.read(),levelStr=levle_string,fileName=videoFile.replace(".mp4",""),songID=songID))
