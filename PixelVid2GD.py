@@ -42,7 +42,7 @@ def replacenth(string, sub, wanted, n):
 #print(decrypt(re.search("<k>k4</k><s>(.*)</s>",decrypted).group(1),False))
 levle_array=[
     "1,1612,2,-29,3,705;",
-    "1,747,2,-29,3,105,54,850;",
+    "1,747,2,-29,3,55,54,850;",
     "1,749,2,-39,3,955,32,-1;",
     "1,13,2,-29,3,945;"
 ]
@@ -96,7 +96,7 @@ def readFrames():
                         levle_array.append(f"1,901,2,{x+wi*x-73.5},3,765,58,1,51,1,10,99999999999;") #move trigger
                     for hi,h in enumerate(w):
                         m=(wi+1)+(wi*80)+(hi+1)
-                        levle_array.append(f"1,971,2,{x+xoffs},3,{y+yoffs},22,10,42,1,44,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},57,1.{m};") #objec
+                        levle_array.append(f"1,917,2,{x+xoffs},3,{y+yoffs},21,10,41,1,43,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},57,1.{m};") #objec
                         yoffs+=3.75
                         he.append(m)
                     xoffs+=3.75
@@ -106,7 +106,7 @@ def readFrames():
                 for wi,w in enumerate(pxArray):
                     for hi,h in enumerate(w):
                         if pxArray[wi][hi] != last_pxArray[wi][hi]:
-                            levle_array.append(f"1,1006,2,{trig_x},3,{trig_y+yoffs},10,99999999999,50,10,49,{'{0}a{1}a{2}a1a1'.format(*rgb_to_hsv(pxArray[wi][hi]))},51,{groupIds[wi][hi]},52,1,48,1;") #pulse trigger
+                            levle_array.append(f"1,1006,2,{trig_x},3,{trig_y+yoffs},46,99999999999,50,10,49,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},51,{groupIds[wi][hi]},52,1,48,1;") #pulse trigger
                             yoffs+=4
                             changes+=1
             last_pxArray=deepcopy(pxArray)
@@ -133,7 +133,7 @@ for i in re.finditer("<k>k_(\d+)</k><d><k>kCEK</k>", saveData[1]):
     saveData[1] = replacenth(saveData[1], i.group(), f"<k>k_{int(i.group(1))+1}</k><d><k>kCEK</k>", s)
     s=2
 saveData:str = ''.join([saveData[0], "<k>_isArr</k><t />", data['ham'], data['bur'], levle_string, data['ger'], saveData[1]])
-saveData = saveData.replace("[[NAME]]", re.sub("[^a-z|0-9]","",videoFile.replace(".mp4","").split(".")[0][0:30])).replace("[[DESC]]", "").replace("[[SONG_ID]]",songID).replace("[[EDITORX]]",trig_x+3000)
+saveData = saveData.replace("[[NAME]]", re.sub("[^a-z|0-9]","",videoFile.replace(".mp4","").split(".")[0][0:30])).replace("[[DESC]]", "").replace("[[SONG_ID]]",songID).replace("[[EDITORX]]",str(trig_x+3000))
 with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),"w") as w:
     w.write(saveData)
 
