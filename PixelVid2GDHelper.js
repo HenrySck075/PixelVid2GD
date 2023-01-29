@@ -3,7 +3,6 @@ const zlib = require('zlib')
 const fs = require('fs')
 let arg=process.argv
 let fileName = arg[2]
-let levelStr = require('./levelstring')
 
 let data = require('./leveldata.json')
 let gdLevels = process.env.HOME || process.env.USERPROFILE + "/AppData/Local/GeometryDash/CCLocalLevels.dat"
@@ -27,7 +26,9 @@ fs.readFile(gdLevels, 'utf8', function(err, saveData) {
     
     saveData = saveData.split("<k>_isArr</k><t />")
     saveData[1] = saveData[1].replace(/<k>k_(\d+)<\/k><d><k>kCEK<\/k>/g, function(n) { return "<k>k_" + (Number(n.slice(5).split("<")[0])+1) + "</k><d><k>kCEK</k>" })
+    let levelStr=fs.readFileSync('./levelstring')
     saveData = saveData[0] + "<k>_isArr</k><t />" + data.ham + data.bur + levelStr + data.ger + saveData[1]        
+    
     saveData = saveData.replace("[[NAME]]", fileName.split(".")[0].replace(/[^a-z|0-9]/gi, "").slice(0, 30)).replace("[[DESC]]", "info goes here")
     fs.writeFileSync(gdLevels, saveData, 'utf8')
 })
