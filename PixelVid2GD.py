@@ -49,13 +49,13 @@ levle_array=[
 
 # Get the Current Dir
 root = os.getcwd()
-x, y=3.75,783.75
+x, y=7.5,787.5
 trig_x, trig_y=0,y+30*80
 last_pxArray=[]
 
 videoFile = input("File name (and extension) to process: ")
 songID=input("Song ID to replace with the video's audio: ")
-#3.75
+#7.5
 print("\n\n")
 
 with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),'r') as r:
@@ -70,6 +70,7 @@ def readFrames():
     width  = math.floor(cap.get(3))
     height = math.floor(cap.get(4))
     groupIds=[]
+    m=2
     while(cap.isOpened()):
         ret,cv2_im = cap.read()
         if ret :
@@ -95,11 +96,11 @@ def readFrames():
                     if wi == math.floor(len(pxArray)/2):
                         levle_array.append(f"1,901,2,{x+wi*x-73.5},3,765,58,1,51,1,10,99999999999;") #move trigger
                     for hi,h in enumerate(w):
-                        m=(wi+1)+(wi*80)+(hi+1)
+                        m+=1
                         levle_array.append(f"1,917,2,{x+xoffs},3,{y+yoffs},21,10,41,1,43,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},57,1.{m};") #objec
-                        yoffs+=3.75
+                        yoffs+=7.5
                         he.append(m)
-                    xoffs+=3.75
+                    xoffs+=7.5
                     groupIds.append(he)
             else:
                 yoffs=0
