@@ -55,7 +55,7 @@ last_pxArray=[]
 
 videoFile = input("File name (and extension) to process: ")
 songID=input("Song ID to replace with the video's audio: ")
-#1.875
+#3.75
 print("\n\n")
 
 with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),'r') as r:
@@ -77,7 +77,7 @@ def readFrames():
 
             pil_im = Image.fromarray(converted)
 
-            im = pil_im.resize((math.floor(width/(height/80)),80))
+            im = pil_im.resize((math.floor(width/(height/40)),40))
                     
             pxArray=[]
             #please help me
@@ -96,10 +96,10 @@ def readFrames():
                         levle_array.append(f"1,901,2,{x+wi*x-73.5},3,765,58,1,51,1,10,99999999999;") #move trigger
                     for hi,h in enumerate(w):
                         m=(wi+1)+(wi*80)+(hi+1)
-                        levle_array.append(f"1,971,2,{x+xoffs},3,{y+yoffs},22,10,42,1,44,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},57,1.{m},32,0.5;") #objec
-                        yoffs+=1.875
+                        levle_array.append(f"1,971,2,{x+xoffs},3,{y+yoffs},22,10,42,1,44,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},57,1.{m};") #objec
+                        yoffs+=3.75
                         he.append(m)
-                    xoffs+=1.875
+                    xoffs+=3.75
                     groupIds.append(he)
             else:
                 yoffs=0
@@ -113,7 +113,7 @@ def readFrames():
         elif not ret:
             break
         if frames==0: print("First frame, nothing to compare")
-        else: print(f"{frames} with {frames-1}: {changes} change(s)      ",end="\r")
+        else: pass#print(f"{frames} with {frames-1}: {changes} change(s)      ",end="\r")
         trig_x+=19.2
         cv2.waitKey(int(1000/30))
         frames+=1
