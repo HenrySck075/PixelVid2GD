@@ -1,7 +1,7 @@
 import os,cv2,math,colorsys,js2py
 from copy import deepcopy#,numpy as np
 from PIL import Image
-if not os.path.exists("./PixelVid2GDHelper.js"): print("Cannot find helper file. Please also include it here or rename the helper file if you did"); exit(1)
+#if not os.path.exists("./PixelVid2GDHelper.js"): print("Cannot find helper file. Please also include it here or rename the helper file if you did"); exit(1)
 SAVE_FILE_PATH = os.path.join(os.getenv('LocalAppData'), 'GeometryDash')
 def xor_bytes(data: bytes, value: int) -> bytes:
     return bytes(map(lambda x: x ^ value, data))
@@ -100,7 +100,7 @@ print("Comparing frames")
 readFrames()
 levle_array.append(f"1,1,2,{trig_x+700},3,1")
 levle_string=''.join(levle_array)
-os.system(f"ffmpeg -y -i \"./{videoFile}\" {os.path.join(SAVE_FILE_PATH,f'{str(songID)}.mp3')}")
+os.system(f"ffmpeg -y -i -loglevel error \"./{videoFile}\" {os.path.join(SAVE_FILE_PATH,f'{str(songID)}.mp3')} ")
 
 #js-ing time
 decod=js2py.eval_js("""
@@ -114,10 +114,9 @@ function decode(saveData,levelStr,fileName,songID) {
     if (err) return console.log("Error! Could not open or find GD save file")
 
     if (!saveData.startsWith('<?xml version="1.0"?>')) {
-        
         saveData = Buffer.from(saveData, 'base64')
         try { saveData = zlib.unzipSync(saveData).toString() }
-        catch(e) { return console.log("Error! GD save file seems to be corrupt!\nMaybe try saving a GD level in-game to refresh it?\n") }
+        catch(e) { return console.log("Error! GD save file seems to be corrupt!") }
     }
     saveData = saveData.split("<k>_isArr</k><t />")
     saveData[1] = saveData[1].replace(/<k>k_(\d+)<\/k><d><k>kCEK<\/k>/g, function(n) { return "<k>k_" + (Number(n.slice(5).split("<")[0])+1) + "</k><d><k>kCEK</k>" })
@@ -128,4 +127,4 @@ function decode(saveData,levelStr,fileName,songID) {
 }
 """)
 with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),'r') as r:
-    decrypted=decod(r.read(),levle_string,videoFile.replace(".mp4",""),songID)
+    decod(r.read(),levle_string,videoFile.replace(".mp4",""),songID)
