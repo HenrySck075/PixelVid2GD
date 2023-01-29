@@ -59,7 +59,7 @@ songID=input("Song ID to replace with the video's audio: ")
 print("\n\n")
 
 with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),'r') as r:
-    decrypted=decrypt(r.read())
+    decrypted=decrypt(r.read().encode('utf-8'))
 
 def readFrames():
     global videoFile,last_pxArray,levle_array,x,y,trig_x,trig_y
@@ -132,8 +132,10 @@ saveData = decrypted.decode('utf-8').split("<k>_isArr</k><t />")
 for i in re.finditer("<k>k_(\d+)</k><d><k>kCEK</k>", saveData[1]):
     saveData[1] = replacenth(saveData[1], i.group(), f"<k>k_{int(i.group(1))+1}</k><d><k>kCEK</k>", s)
     s=2
-saveData = saveData[0] + "<k>_isArr</k><t />" + data.ham + data.bur + "{levelStr}" + data.ger + saveData[1]        
-print("im in here!")
-saveData = saveData.replace("[[NAME]]", fileName.split(".")[0].replace(/[^a-z|0-9]/gi, "").slice(0, 30)).replace("[[DESC]]", "").replace("[[SONG_ID]]","{songID}")
-fs.writeFileSync(gdLevels, saveData, 'utf8')
+saveData:str = ''.join([saveData[0], "<k>_isArr</k><t />", data['ham'], data['bur'], levle_string, data['ger'], saveData[1]])
+saveData = saveData.replace("[[NAME]]", re.sub("[^a-z|0-9]","",videoFile.replace(".mp4","").split(".")[0][0:30])).replace("[[DESC]]", "").replace("[[SONG_ID]]",songID)
+with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),"w") as w:
+    w.write(saveData)
+
+print(f"Done!  {videoFile} | {len(levle_array)} objects")
     #".format(saveData=r.read(),levelStr=levle_string,fileName=videoFile.replace(".mp4",""),songID=songID))
