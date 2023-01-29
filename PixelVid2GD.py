@@ -97,7 +97,7 @@ def readFrames():
                         levle_array.append(f"1,901,2,{x+wi*x-73.5},3,765,58,1,51,1,10,99999999999;") #move trigger
                     for hi,h in enumerate(w):
                         m+=1
-                        levle_array.append(f"1,917,2,{x+xoffs},3,{y+yoffs},21,10,41,1,43,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},57,1.{m};") #objec
+                        levle_array.append(f"1,917,2,{x+xoffs},3,{y+yoffs},21,10,41,1,57,1.{m};1,1006,2,0,3,{y+yoffs+8000},46,99999999999,50,10,49,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},24,1;") #objec
                         yoffs+=7.5
                         he.append(m)
                     xoffs+=7.5
@@ -107,7 +107,7 @@ def readFrames():
                 for wi,w in enumerate(pxArray):
                     for hi,h in enumerate(w):
                         if pxArray[wi][hi] != last_pxArray[wi][hi]:
-                            levle_array.append(f"1,1006,2,{trig_x},3,{trig_y+yoffs},46,99999999999,50,10,49,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},51,{groupIds[wi][hi]},52,1,48,1;") #pulse trigger
+                            levle_array.append(f"1,1006,2,{trig_x},3,{trig_y+yoffs},46,99999999999,50,10,49,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},51,{groupIds[wi][hi]},52,1,48,1,86,1;") #pulse trigger
                             yoffs+=4
                             changes+=1
             last_pxArray=deepcopy(pxArray)
@@ -138,5 +138,5 @@ saveData = saveData.replace("[[NAME]]", re.sub("[^a-z|0-9]","",videoFile.replace
 with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),"w") as w:
     w.write(saveData)
 
-print(f"Done!  {videoFile} | {len(levle_array)} objects")
+print(f"Done!  {videoFile} | {len(levle_array)*2-5} objects")
     #".format(saveData=r.read(),levelStr=levle_string,fileName=videoFile.replace(".mp4",""),songID=songID))
