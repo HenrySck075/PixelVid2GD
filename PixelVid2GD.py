@@ -41,10 +41,12 @@ def replacenth(string, sub, wanted, n):
     return newString
 #print(decrypt(re.search("<k>k4</k><s>(.*)</s>",decrypted).group(1),False))
 levle_array=[
-    "1,1612,2,-29,3,705;",
-    "1,747,2,-29,3,55,54,850;",
-    "1,749,2,-39,3,955,32,-1;",
-    "1,13,2,-29,3,945;"
+    "1,1007,2,0,3,1,35,0,51,1"
+    "1,1612,2,-29,3,705,57,1;",
+    "1,747,2,-29,3,55,54,850,57,1;",
+    "1,749,2,-39,3,955,32,-1,57,1;",
+    "1,13,2,-29,3,945,57,1;",
+    "1,1819,2,0,3,0,36,1;"
 ]
 
 # Get the Current Dir
@@ -55,12 +57,15 @@ last_pxArray=[]
 
 videoFile = input("File name (and extension) to process: ")
 songID=input("Song ID to replace with the video's audio: ")
+with input("Split interval (hh:mm:ss): ") as i:
+    try: splitInterval=(int(m) for m in i.split(':')) 
+    except: splitInterval=None
 #7.5
 print("\n\n")
 
 with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),'r') as r:
     decrypted=decrypt(r.read().encode('utf-8'))
-
+saveData = decrypted.decode('utf-8')
 def readFrames():
     global videoFile,last_pxArray,levle_array,x,y,trig_x,trig_y
     frames=0
@@ -94,10 +99,10 @@ def readFrames():
                     yoffs=0
                     he=[]
                     if wi == math.floor(len(pxArray)/2):
-                        levle_array.append(f"1,901,2,{x+wi*x-73.5},3,765,58,1,51,1,10,99999999999;") #move trigger
+                        levle_array.append(f"1,901,2,{x+wi*x-73.5},3,765,58,1,51,2,10,99999999999;") #move trigger
                     for hi,h in enumerate(w):
                         m+=1
-                        levle_array.append(f"1,917,2,{x+xoffs},3,{y+yoffs},21,10,41,1,57,1.{m},64,1,67,1;1,1006,2,0,3,{y+yoffs+8000},46,99999999999,50,10,49,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},24,1,52,1,48,1,51,{m};") #objec
+                        levle_array.append(f"1,917,2,{x+xoffs},3,{y+yoffs},21,10,41,1,57,2.{m},64,1,67,1;1,1006,2,0,3,{y+yoffs+8000},46,99999999999,50,10,49,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},24,1,52,1,48,1,51,{m};") #objec
                         yoffs+=7.5
                         he.append(m)
                     xoffs+=7.5
@@ -120,23 +125,38 @@ def readFrames():
         frames+=1
             
     cap.release()
-print("Comparing frames")
-readFrames()
-levle_array.append(f"1,1049,2,{trig_x+700},3,1,51,1;")
-levle_string=''.join(levle_array)
-os.system(f"ffmpeg -y -i \"./{videoFile}\" {os.path.join(SAVE_FILE_PATH,f'{str(songID)}.mp3')} ")
 
-#js-ing time
-print("writing")
-s=1
-saveData = decrypted.decode('utf-8').split("<k>_isArr</k><t />")
-for i in re.finditer("<k>k_(\d+)</k><d><k>kCEK</k>", saveData[1]):
-    saveData[1] = replacenth(saveData[1], i.group(), f"<k>k_{int(i.group(1))+1}</k><d><k>kCEK</k>", s)
-    s=2
-saveData:str = ''.join([saveData[0], "<k>_isArr</k><t />", data['ham'], data['bur'], levle_string, data['ger'], saveData[1]])
-saveData = saveData.replace("[[NAME]]", re.sub("[^a-z|0-9]","",videoFile.replace(".mp4","").split(".")[0][0:30])).replace("[[DESC]]", "").replace("[[SONG_ID]]",songID).replace("[[EDITORX]]",str(trig_x+3000))
+def proce(tempVideoFile:str):
+    id=tempVideoFile.replace("output", "").replace(".mp4",'')
+    print("-----------------------------------",f"Reading {tempVideoFile}")
+    print("\nComparing frames")
+    readFrames()
+    levle_array.append(f"1,1049,2,{trig_x+700},3,1,51,1;")
+    levle_string=''.join(levle_array)
+    os.system(f"ffmpeg -hide_banner -loglevel error -y -i \"./{tempVideoFile}\" {os.path.join(SAVE_FILE_PATH,f'{str(songID)}.mp3')} ")
+
+    #js-ing time
+    print("writing")
+    s=1
+    saveData=saveData.split("<k>_isArr</k><t />")
+    for i in re.finditer("<k>k_(\d+)</k><d><k>kCEK</k>", saveData[1]):
+        saveData[1] = replacenth(saveData[1], i.group(), f"<k>k_{int(i.group(1))+1}</k><d><k>kCEK</k>", s)
+        s=2
+    saveData:str = ''.join([saveData[0], "<k>_isArr</k><t />", data['ham'], data['bur'], levle_string, data['ger'], saveData[1]])
+    saveData = saveData.replace("[[NAME]]", re.sub("[^a-z|0-9|A-Z| ]","",(videoFile+f" {id}").replace(".mp4","")[0][0:30])).replace("[[DESC]]", "").replace("[[SONG_ID]]",songID).replace("[[EDITORX]]",str(trig_x+3000))
+    songID=str(int(songID)+1)
+
+if splitInterval is not None: #keyboard broke
+    if not os.path.exists("./split"): os.mkdir("./split")
+    else: 
+        for i in os.scandir("./split"): 
+            if i.is_file(): os.system(f"del {i.path}")
+    os.system(f"ffmpeg -hide_banner -loglevel error -i {videoFile} -c copy -map 0 -segment_time {splitInterval} -f segment -reset_timestamps 1 \"./split/output%%03d.mp4\"")
+    for f in os.scandir("./split"):
+        if f.is_file(): proce(f.name)
+else: proce(videoFile)
 with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),"w") as w:
     w.write(saveData)
 
-print(f"Done!  {videoFile} | {len(levle_array)*2-5} objects")
+print(f"Done!  {videoFile} | {(len(levle_array)*2-5)*len(os.listdir('./split'))} objects")
     #".format(saveData=r.read(),levelStr=levle_string,fileName=videoFile.replace(".mp4",""),songID=songID))
