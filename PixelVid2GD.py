@@ -57,9 +57,9 @@ last_pxArray=[]
 
 videoFile = input("File name (and extension) to process: ")
 songID=input("Song ID to replace with the video's audio: ")
-with input("Split interval (hh:mm:ss): ") as i:
-    try: splitInterval=(int(m) for m in i.split(':')) 
-    except: splitInterval=None
+i= input("Split interval (hh:mm:ss): ")
+if all(i.split(':')[idx].isdigit() for idx in range(3)): splitInterval=(int(m) for m in i.split(':')) 
+else:splitInterval=None
 #7.5
 print("\n\n")
 
@@ -155,6 +155,7 @@ if splitInterval is not None: #keyboard broke
     for f in os.scandir("./split"):
         if f.is_file(): proce(f.name)
 else: proce(videoFile)
+
 with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),"w") as w:
     w.write(saveData)
 
