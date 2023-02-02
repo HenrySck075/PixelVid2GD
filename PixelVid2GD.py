@@ -5,7 +5,7 @@ from PIL import Image,ImageTk
 SAVE_FILE_PATH = os.path.join(os.getenv('LocalAppData'), 'GeometryDash')
 data={
     "ham": "<k>k_0</k><d><k>kCEK</k><i>4</i><k>k1</k><i>0</i><k>k2</k><s>[[NAME]]</s><k>k4</k><s>",
-    "bur": "kS38,1_0_2_0_3_0_11_0_12_0_13_0_4_-1_6_1000_7_1_15_1_18_0_8_1|1_0_2_0_3_0_11_255_12_255_13_255_4_-1_6_1001_7_1_15_1_18_0_8_1|1_0_2_0_3_0_11_255_12_255_13_255_4_-1_6_1009_7_1_15_1_18_0_8_1|1_0_2_0_3_0_11_255_12_255_13_255_4_-1_6_1002_5_1_7_1_15_1_18_0_8_1|1_135_2_135_3_135_11_255_12_255_13_255_4_-1_6_1005_5_1_7_1_15_1_18_0_8_1|1_255_2_125_3_0_11_255_12_255_13_255_4_-1_6_1006_5_1_7_1_15_1_18_0_8_1|1_255_2_0_3_0_11_255_12_255_13_255_4_-1_6_10_7_1_15_1_18_0_8_1|,kA13,0,kA15,0,kA16,0,kA14,,kA6,13,kA7,0,kA17,0,kA18,0,kS39,0,kA2,0,kA3,0,kA8,0,kA4,4,kA9,0,kA10,0,kA11,0;",
+    "bur": "kS38,1_0_2_0_3_0_11_0_12_0_13_0_4_-1_6_1000_7_1_15_1_18_0_8_1|1_0_2_0_3_0_11_255_12_255_13_255_4_-1_6_1001_7_1_15_1_18_0_8_1|1_0_2_0_3_0_11_255_12_255_13_255_4_-1_6_1009_7_1_15_1_18_0_8_1|1_0_2_0_3_0_11_255_12_255_13_255_4_-1_6_1002_5_1_7_1_15_1_18_0_8_1|1_135_2_135_3_135_11_255_12_255_13_255_4_-1_6_1005_5_1_7_1_15_1_18_0_8_1|1_255_2_125_3_0_11_255_12_255_13_255_4_-1_6_1006_5_1_7_1_15_1_18_0_8_1|,kA13,0,kA15,0,kA16,0,kA14,,kA6,13,kA7,0,kA17,0,kA18,0,kS39,0,kA2,0,kA3,0,kA8,0,kA4,4,kA9,0,kA10,0,kA11,0;",
     "ger": "</s><k>k3</k><s>[[DESC]]</s><k>k14</k><t /><k>k46</k><i>0</i><k>k5</k><s></s><k>k13</k><t /><k>k21</k><i>2</i><k>k48</k><i>69</i><k>k16</k><i>1</i><k>k23</k><s>3</s><k>k8</k><i>0</i><k>k45</k><i>[[SONG_ID]]</i><k>k80</k><i>0</i><k>k50</k><i>0</i><k>k47</k><t /><k>k84</k><i>0</i><k>kI1</k><r>[[EDITORX]]</r><k>kI2</k><r>0</r><k>kI3</k><r>0</r><k>kI5</k><i>6</i><k>kI6</k><d><k>0</k><s>0</s><k>1</k><s>0</s><k>2</k><s>0</s><k>3</k><s>0</s><k>4</k><s>0</s><k>5</k><s>0</s><k>6</k><s>0</s><k>7</k><s>0</s><k>8</k><s>0</s><k>9</k><s>0</s><k>10</k><s>0</s><k>11</k><s>0</s><k>12</k><s>0</s><k>k64</k><i>6</i></d></d>"
 }
 def xor_bytes(data: bytes, value: int) -> bytes:
@@ -96,7 +96,7 @@ def readFrames():
             #please help me
             for w in range(im.width):
                 lay=[]
-                for h in range(im.height):
+                for h in range(40):
                     lay.append(im.getpixel((w,h)))
                 pxArray.append(lay)
             changes=0
@@ -109,7 +109,7 @@ def readFrames():
                         levle_array.append(f"1,901,2,{x+wi*x-73.5},3,765,58,1,51,1,10,99999999999;") #move trigger
                     for hi,h in enumerate(w):
                         m+=1
-                        levle_array.append(f"1,917,2,{x+xoffs},3,{y+yoffs},21,10,41,1,57,1.{m},64,1,67,1;1,1006,2,0,3,{y+yoffs+8000},46,99999999999,50,10,49,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},24,1,52,1,48,1,86,1,51,{m};") #objec
+                        levle_array.append(f"1,917,2,{x+xoffs},3,{y+yoffs},21,10,41,1,57,1.{m},64,1,67,1;1,1006,2,0,3,{y+yoffs+8000},46,99999999999,{'7,{0},8,{1},9,{2},'.format(*pxArray[wi][hi]) if pxArray[wi][hi] != (255,255,255) else ''}24,1,52,1,48,1,86,1,51,{m};") #objec
                         yoffs+=7.5
                         he.append(m)
                     xoffs+=7.5
@@ -119,14 +119,13 @@ def readFrames():
                 for wi,w in enumerate(pxArray):
                     for hi,h in enumerate(w):
                         if pxArray[wi][hi] != last_pxArray[wi][hi]:
-                            levle_array.append(f"1,1006,2,{trig_x},3,{trig_y+yoffs},46,99999999999,50,10,49,{'{0}a{1}a{2}a0a0'.format(*rgb_to_hsv(pxArray[wi][hi]))},51,{groupIds[wi][-(hi+1)]},52,1,48,1,86,1;") #pulse trigger
+                            levle_array.append(f"1,1006,2,{trig_x},3,{trig_y+yoffs},46,99999999999,{'7,{0},8,{1},9,{2}'.format(*pxArray[wi][hi])},51,{groupIds[wi][-(hi+1)]},52,1,48,1,86,1;") #pulse trigger
                             yoffs+=4
                             changes+=1
             last_pxArray=deepcopy(pxArray)
         elif not ret:
-            if showProgress: r.destroy()
-        if frames==0: print("First frame, nothing to compare")
-        else: print(f"{frames} with {frames-1}: {changes} change(s)      ",end="\r")
+            break
+        print(f"{frames} with {frames-1}: {changes} change(s)      ",end="\r")
         trig_x+=19.2
         cv2.waitKey(int(1000/30))
         frames+=1
