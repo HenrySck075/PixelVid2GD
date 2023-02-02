@@ -59,7 +59,9 @@ songID=input("Song ID to replace with the video's audio: ")
 print("\n\n")
 
 with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),'r') as r:
-    decrypted=decrypt(r.read().encode('utf-8'))
+    m=r.read()
+    if "<k>_isArr</k><t />" not in m: decrypted=decrypt(m.encode('utf-8'))
+    else: decrypted=m
 
 def readFrames():
     global videoFile,last_pxArray,levle_array,x,y,trig_x,trig_y
