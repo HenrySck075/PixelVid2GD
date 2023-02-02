@@ -1,6 +1,6 @@
-import base64,os,cv2,math,colorsys,zlib,regex as re
+import base64,os,cv2,math,colorsys,zlib,regex as re,tkinter as tk
 from copy import deepcopy#,numpy as np
-from PIL import Image
+from PIL import Image,ImageTk
 #if not os.path.exists("./PixelVid2GDHelper.js"): print("Cannot find helper file. Please also include it here or rename the helper file if you did"); exit(1)
 SAVE_FILE_PATH = os.path.join(os.getenv('LocalAppData'), 'GeometryDash')
 data={
@@ -55,18 +55,25 @@ last_pxArray=[]
 
 videoFile = input("File name (and extension) to process: ")
 songID=input("Song ID to replace with the video's audio: ")
+showProgress=input("Show current frame while processing it (0 or 1, others is 0): ")
+if showProgress.isdigit():
+    showProgress=True if int(showProgress) == 1 else False
+else: showProgress=False
 #7.5
 print("\n\n")
 
 with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),'r') as r:
     m=r.read()
     if "<k>_isArr</k><t />" not in m: decrypted=decrypt(m.encode('utf-8'))
-    else: decrypted=m
+    else: decrypted=m.encode('utf-8')
 
 def readFrames():
     global videoFile,last_pxArray,levle_array,x,y,trig_x,trig_y
     frames=0
-    
+    if showProgress:
+        r=tk.Tk()
+        panel=tk.Label(r)
+        panel.pack(side="bottom", fill="both", expand="yes")
     print('Read file: {}'.format(videoFile))
     cap = cv2.VideoCapture(videoFile) # says we capture an image from a webcam
     width  = math.floor(cap.get(3))
@@ -81,7 +88,10 @@ def readFrames():
             pil_im = Image.fromarray(converted)
 
             im = pil_im.resize((math.floor((width/height)*40),40))
-                    
+            if showProgress:
+                photo=ImageTk.PhotoImage(im)
+                panel.configure(image=photo)
+                r.update()
             pxArray=[]
             #please help me
             for w in range(im.width):
@@ -114,7 +124,7 @@ def readFrames():
                             changes+=1
             last_pxArray=deepcopy(pxArray)
         elif not ret:
-            break
+            if showProgress: r.destroy()
         if frames==0: print("First frame, nothing to compare")
         else: print(f"{frames} with {frames-1}: {changes} change(s)      ",end="\r")
         trig_x+=19.2
