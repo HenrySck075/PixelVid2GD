@@ -109,7 +109,7 @@ def readFrames():
                         levle_array.append(f"1,901,2,{x+wi*x-73.5},3,765,58,1,51,1,10,99999999999;") #move trigger
                     for hi,h in enumerate(w):
                         m+=1
-                        levle_array.append(f"1,917,2,{x+xoffs},3,{y+yoffs},21,10,41,1,57,1.{m},64,1,67,1;1,1006,2,0,3,{y+yoffs+8000},46,99999999999,{'7,{0},8,{1},9,{2},'.format(*pxArray[wi][hi]) if pxArray[wi][hi] != (255,255,255) else ''}24,1,52,1,48,1,86,1,51,{m};") #objec
+                        levle_array.append(f"1,917,2,{x+xoffs},3,{y+yoffs},21,10,41,1,57,1.{m},64,1,67,1;1,1006,2,0,3,{y+yoffs+8000},46,99999999999,{'7,{0},8,{1},9,{2},'.format(*pxArray[wi][hi]) if pxArray[wi][hi] != (255,255,255) else ''}24,1,52,1,48,0,86,1,51,{m};") #objec
                         yoffs+=7.5
                         he.append(m)
                     xoffs+=7.5
@@ -119,7 +119,7 @@ def readFrames():
                 for wi,w in enumerate(pxArray):
                     for hi,h in enumerate(w):
                         if pxArray[wi][hi] != last_pxArray[wi][hi]:
-                            levle_array.append(f"1,1006,2,{trig_x},3,{trig_y+yoffs},46,99999999999,{'7,{0},8,{1},9,{2}'.format(*pxArray[wi][hi])},51,{groupIds[wi][-(hi+1)]},52,1,48,1,86,1;") #pulse trigger
+                            levle_array.append(f"1,1006,2,{trig_x},3,{trig_y+yoffs},46,99999999999,{'7,{0},8,{1},9,{2}'.format(*pxArray[wi][hi])},51,{groupIds[wi][-(hi+1)]},52,1,48,0,86,1;") #pulse trigger
                             yoffs+=4
                             changes+=1
             last_pxArray=deepcopy(pxArray)
@@ -145,7 +145,7 @@ for i in re.finditer("<k>k_(\d+)</k><d><k>kCEK</k>", saveData[1]):
     saveData[1] = replacenth(saveData[1], i.group(), f"<k>k_{int(i.group(1))+1}</k><d><k>kCEK</k>", s)
     s=2
 saveData:str = ''.join([saveData[0], "<k>_isArr</k><t />", data['ham'], data['bur'], levle_string, data['ger'], saveData[1]])
-saveData = saveData.replace("[[NAME]]", re.sub("[^a-z|0-9|A-Z| ]","",videoFile.replace(".mp4","").split(".")[0][0:30])).replace("[[DESC]]", "").replace("[[SONG_ID]]",songID).replace("[[EDITORX]]",str(trig_x+3000))
+saveData = saveData.replace("[[NAME]]", re.sub("[^a-z0-9A-Z| ]","",videoFile.replace(".mp4","")[0:30])).replace("[[DESC]]", "").replace("[[SONG_ID]]",songID).replace("[[EDITORX]]",str(trig_x+3000))
 with open(os.path.join(SAVE_FILE_PATH,"CCLocalLevels.dat"),"w") as w:
     w.write(saveData)
 
