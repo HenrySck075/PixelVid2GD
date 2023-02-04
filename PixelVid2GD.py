@@ -50,7 +50,7 @@ try:
 
     # Get the Current Dir
     root = os.getcwd()
-    x, y=7.5,787.5
+    x, y=7.5,1087.5
     trig_x, trig_y=0,y+30*80
     last_pxArray=[]
 
@@ -110,7 +110,8 @@ try:
                             levle_array.append(f"1,901,2,{x+wi*x-73.5},3,765,58,1,51,1,10,99999999999;") #move trigger
                         for hi,h in enumerate(w):
                             m+=1
-                            levle_array.append(f"1,917,2,{x+xoffs},3,{y+yoffs},21,10,41,1,57,1.{m},64,1,67,1;1,1006,2,0,3,{y+yoffs+8000},46,99999999999,{'7,{0},8,{1},9,{2},'.format(*pxArray[wi][hi]) if pxArray[wi][hi] != (255,255,255) else ''}24,1,52,1,48,0,86,1,51,{m};") #objec
+                            additional_pulse_str=f"1,1006,2,0,3,{y+yoffs+8000},46,99999999999,{'7,{0},8,{1},9,{2}'.format(*pxArray[wi][hi])},24,1,52,1,48,0,86,1,51,{m};"
+                            levle_array.append(f"1,917,2,{x+xoffs},3,{y-yoffs},21,10,41,1,57,1.{m},64,1,67,1;{'' if pxArray[wi][hi] == (255,255,255) else additional_pulse_str}") #objec
                             yoffs+=7.5
                             he.append(m)
                         xoffs+=7.5
@@ -120,13 +121,13 @@ try:
                     for wi,w in enumerate(pxArray):
                         for hi,h in enumerate(w):
                             if pxArray[wi][hi] != last_pxArray[wi][hi]:
-                                levle_array.append(f"1,1006,2,{trig_x},3,{trig_y+yoffs},46,99999999999,{'7,{0},8,{1},9,{2}'.format(*pxArray[wi][hi])},51,{groupIds[wi][-(hi+1)]},52,1,48,0,86,1;") #pulse trigger
+                                levle_array.append(f"1,1006,2,{trig_x},3,{trig_y+yoffs},46,99999999999,{'7,{0},8,{1},9,{2}'.format(*pxArray[wi][hi])},51,{groupIds[wi][hi]},52,1,48,0,86,1;") #pulse trigger
                                 yoffs+=4
                                 changes+=1
                 last_pxArray=deepcopy(pxArray)
             elif not ret:
                 break
-            print(f"{frames} with {frames-1}: {changes} change(s)      ",end="\r")
+            #print(f"{frames} with {frames-1}: {changes} change(s)      ",end="\r")
             trig_x+=19.2
             cv2.waitKey(int(1000/30))
             frames+=1
