@@ -50,7 +50,7 @@ try:
 
     # Get the Current Dir
     root = os.getcwd()
-    x, y=7.5,1087.5
+    x, y=7.5,1087
     trig_x, trig_y=0,y+30*80
     last_pxArray=[]
 
@@ -70,6 +70,7 @@ try:
 
     def readFrames():
         global videoFile,last_pxArray,levle_array,x,y,trig_x,trig_y
+        step=(60/30) #change value after 60/ to change fps
         frames=0
         if showProgress:
             r=tk.Tk()
@@ -83,7 +84,7 @@ try:
         m=2
         while(cap.isOpened()):
             ret,cv2_im = cap.read()
-            if ret :
+            if ret and frames%step == 0:
                 converted = cv2.cvtColor(cv2_im,cv2.COLOR_BGR2RGB)
 
                 pil_im = Image.fromarray(converted)
@@ -129,7 +130,6 @@ try:
                 break
             #print(f"{frames} with {frames-1}: {changes} change(s)      ",end="\r")
             trig_x+=19.2
-            cv2.waitKey(int(1000/30))
             frames+=1
                 
         cap.release()
@@ -137,9 +137,10 @@ try:
     readFrames()
     levle_array.append(f"1,1049,2,{trig_x+700},3,1,51,1;")
     levle_string=''.join(levle_array)
-    os.system(f"ffmpeg -y -i \"./{videoFile}\" \"{os.path.join(SAVE_FILE_PATH,f'{str(songID)}.mp3')}\" ")
-
-    #js-ing time
+    os.system(f"ffmpeg -y -i \"{videoFile}\" \"{os.path.join(SAVE_FILE_PATH,f'{str(songID)}.mp3')}\" ")
+        #".format(saveData=r.read(),levelStr=levle_string,fileName=videoFile.replace(".mp4",""),songID=songID))
+    raise KeyboardInterrupt("I'm funny")
+except KeyboardInterrupt:
     print("writing")
     s=1
     saveData = decrypted.decode('utf-8').split("<k>_isArr</k><t />")
@@ -152,9 +153,5 @@ try:
         w.write(saveData)
 
     print(f"Done!  {videoFile} | {len(levle_array)*2-5} objects")
-        #".format(saveData=r.read(),levelStr=levle_string,fileName=videoFile.replace(".mp4",""),songID=songID))
-
-except KeyboardInterrupt:
-    print("\n\nOperation canceled")
 except Exception as e:
     traceback.print_tb(e.__traceback__)
