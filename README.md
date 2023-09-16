@@ -13,4 +13,4 @@ evolution when
 
 only work in windows
 
-to ask something or my sanity or just want to friend (which is 90% not gonna accept since idk you), `Henry Spheria#8916`
+to ask something or my sanity or just want to friend (which is 90% not gonna accept since idk you), discord `henrysck075`
